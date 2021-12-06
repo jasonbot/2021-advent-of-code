@@ -60,12 +60,15 @@ def bit_criteria(bitsequence, *, large):
                 bv = "0"
             else:
                 bv = "1"
-
         remaining_bits = [b for b in remaining_bits if b[-1 - (bit_number)] == bv]
+
+        print(bit_value_key, large, remaining_bits)
 
         bit_number += 1
 
-    return int(remaining_bits[0], 2)
+    rv = int(remaining_bits[0], 2)
+    print("!!!!", rv, remaining_bits)
+    return rv
 
 
 with open("day3.txt", "r") as in_handle:
