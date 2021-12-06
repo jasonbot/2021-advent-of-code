@@ -4,10 +4,10 @@ import collections
 def bit_stats(bitsequence):
     stats = collections.defaultdict(lambda: collections.defaultdict(int))
     for item in bitsequence:
-        for index, value in enumerate(reversed(item)):
+        for index, value in enumerate(item):
             stats[index][value] += 1
 
-    return stats
+    return dict(stats)
 
 
 def common_bits(bit_stats, index=-1):
@@ -38,14 +38,20 @@ def bit_criteria(bitsequence, *, large):
     # in the position being considered.
     remaining_bits = bitsequence[:]
 
+    bc = ""
+
     bit_number = 0
+
+    ts = bit_stats(remaining_bits)
 
     bv = None
     while len(remaining_bits) > 1:
         stats = bit_stats(remaining_bits)
 
         bit_value_key = stats[bit_number]
-        if bit_value_key["1"] == bit_value_key["0"]:
+        if bit_value_key["1"] == 0 or bit_value_key["0"] == 0:
+            raise ValueError("HI")
+        elif bit_value_key["1"] == bit_value_key["0"]:
             if large:
                 bv = "1"
             else:
@@ -55,19 +61,17 @@ def bit_criteria(bitsequence, *, large):
                 bv = "1"
             else:
                 bv = "0"
-        else:
+        elif bit_value_key["1"] < bit_value_key["0"]:
             if large:
                 bv = "0"
             else:
                 bv = "1"
-        remaining_bits = [b for b in remaining_bits if b[-1 - (bit_number)] == bv]
-
-        print(bit_value_key, large, remaining_bits)
+        remaining_bits = [b for b in remaining_bits if b[bit_number] == bv]
+        bc = bv + bc
 
         bit_number += 1
 
     rv = int(remaining_bits[0], 2)
-    print("!!!!", rv, remaining_bits)
     return rv
 
 
@@ -75,4 +79,6 @@ with open("day3.txt", "r") as in_handle:
     lines = [l.strip() for l in in_handle]
 
 print(gamma(lines) * epsilon(lines))
-print(bit_criteria(lines, large=True) * bit_criteria(lines, large=False))
+
+b1, b2 = bit_criteria(lines, large=True), bit_criteria(lines, large=False)
+print(b1 * b2)
