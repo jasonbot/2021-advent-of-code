@@ -15,61 +15,88 @@ digits = {
     9: {a, b, c, d, f, g},
 }
 
-by_segment = collections.defaultdict(set)
-by_length = collections.defaultdict(set)
-for number, segments in digits.items():
-    by_length[len(segments)].add(number)
-    for segment in segments:
-        by_segment[segment].add(number)
+def shelf_stable(item):
+    return"".join(sorted(item))
+
+length_count = collections.defaultdict(set)
+intersections = collections.defaultdict(lambda: collections.defaultdict(set))
+
+for d1, i1 in digits.items():
+    length_count[len(i1)].add(d1)
+
+    for d2, i2 in digits.items():
+        if d1 + d2:
+            if len(i1 & i2):
+                intersections[d1][(len(i1), len(i2), len(i1 & i2))].add(d2)
+
+by_length = {k: list(v)[0] for k, v in length_count.items() if len(v) == 1}
+
+# print("LC", length_count)
+# print("IS", intersections)
+# print("BL", by_length)
 
 
 def parse_line(handle):
     for line in handle:
-        print("L", repr(line))
         a, b = line.strip().split("|")
-        inputs = [set(item.strip()) for item in a.split()]
-        outputs = [set(item.strip()) for item in b.split()]
+        inputs = [shelf_stable(item.strip()) for item in a.split()]
+        outputs = [shelf_stable(item.strip()) for item in b.split()]
 
         yield inputs, outputs
 
 
-def potential_segments_for_sequence(segment_chain):
-    potential_segments = {}
-    for item in segment_chain:
-        for letter in item:
-            for j in digits.values():
-                if len(j) == len(item):
-                    potential_segments[letter] = potential_segments.get(
-                        letter, set()
-                    ).union(j)
-    # Now eliminate by unique length
-    for item in segment_chain:
-        dg = by_length[len(item)]
-        print("Lookup", item, dg)
-        if len(dg) == 1:
-            potential_segments[letter] = list(dg)[0]
-            print("Clobbering", letter, "to", potential_segments[letter])
-    return potential_segments
+def figure_out_sequences(list_of_items):
+    digits = {}
+    items = {}
+    visited_numbers = set()
 
+    for item in list_of_items:
+        if by_length.get(len(item)):
+            digits[item] = by_length[len(item)]
+            items[by_length[len(item)]] = item
+            visited_numbers.add(by_length[len(item)])
+    
+    for item in list_of_items:
+        if item not in digits:
+            # print("Need to find", item, digits)
 
-def _combo_list(combo_chain, visited_items):
-    letter, segments = combo_chain[0]
-    rest = combo_chain[1:]
-    for segment in segments:
-        if segment not in visited_items:
-            if rest:
-                for tail in _combo_list(rest, visited_items.union({segment})):
-                    yield ((letter, segment),) + tail
-            else:
-                yield ((letter, segment),)
+            alls = None
+            for d, i in digits.items():
+                rk = (len(d), len(item), len(set(d) & set(item)))
+                if rk in intersections[i]:
+                    # print("Found it!", i, rk, intersections[i][rk])
+                    ifs = intersections[i][rk]
+                    ii = {j for j in ifs if j not in visited_numbers}
+                    # print("II", ii)
+                    if alls is None:
+                        alls = ii
+                    else:
+                        alls &= ii
+            # print("----", alls)
+            assert len(alls) == 1
+            an = list(alls)[0]
+            visited_numbers.add(an)
+            digits[item] = an
+            # print("Mapps", an, digits)
 
-
-def combinatoric_chain(potential_digits):
-    items = sorted(potential_digits.items())
-    for c in _combo_list(items, set()):
-        yield {i[0]: i[1] for i in c}
+    return digits
 
 
 with open("day8.txt") as handle:
+    totals = 0
+    totals_2 = 0
+    look_for = {1,4,7,8}
+
     for inputs, outputs in parse_line(handle):
-        print(inputs, outputs, potential_segments_for_sequence(inputs))
+        num = 0
+
+        mappings = figure_out_sequences(inputs)
+        for item in outputs:
+            if mappings[item] in look_for:
+                totals += 1
+            num *= 10
+            num += mappings[item]
+        totals_2 += num
+
+    print(totals)
+    print(totals_2)
