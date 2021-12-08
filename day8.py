@@ -39,6 +39,7 @@ by_length = {k: list(v)[0] for k, v in length_count.items() if len(v) == 1}
 def parse_line(handle):
     for line in handle:
         a, b = line.strip().split("|")
+        # Return all segment lists in a sorted way
         inputs = [shelf_stable(item.strip()) for item in a.split()]
         outputs = [shelf_stable(item.strip()) for item in b.split()]
 
@@ -60,21 +61,22 @@ def figure_out_sequences(list_of_items):
         if item not in digits:
             # print("Need to find", item, digits)
 
-            alls = None
+            all_potential_digits = None
             for d, i in digits.items():
-                rk = (len(d), len(item), len(set(d) & set(item)))
-                if rk in intersections[i]:
+                intersection_key = (len(d), len(item), len(set(d) & set(item)))
+                if intersection_key in intersections[i]:
                     # print("Found it!", i, rk, intersections[i][rk])
-                    ifs = intersections[i][rk]
+                    ifs = intersections[i][intersection_key]
                     ii = {j for j in ifs if j not in visited_numbers}
                     # print("II", ii)
-                    if alls is None:
-                        alls = ii
+                    # Whittle down potential number based on diffs from known numbers
+                    if all_potential_digits is None:
+                        all_potential_digits = ii
                     else:
-                        alls &= ii
+                        all_potential_digits &= ii
             # print("----", alls)
-            assert len(alls) == 1
-            an = list(alls)[0]
+            assert len(all_potential_digits) == 1
+            an = list(all_potential_digits)[0]
             visited_numbers.add(an)
             digits[item] = an
             # print("Mapps", an, digits)
