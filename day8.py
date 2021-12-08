@@ -15,8 +15,10 @@ digits = {
     9: {a, b, c, d, f, g},
 }
 
+
 def shelf_stable(item):
-    return"".join(sorted(item))
+    return "".join(sorted(item))
+
 
 length_count = collections.defaultdict(set)
 intersections = collections.defaultdict(lambda: collections.defaultdict(set))
@@ -56,7 +58,7 @@ def figure_out_sequences(list_of_items):
             digits[item] = by_length[len(item)]
             items[by_length[len(item)]] = item
             visited_numbers.add(by_length[len(item)])
-    
+
     for item in list_of_items:
         if item not in digits:
             # print("Need to find", item, digits)
@@ -87,7 +89,7 @@ def figure_out_sequences(list_of_items):
 with open("day8.txt") as handle:
     totals = 0
     totals_2 = 0
-    look_for = {1,4,7,8}
+    look_for = {1, 4, 7, 8}
 
     for inputs, outputs in parse_line(handle):
         num = 0
