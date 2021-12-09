@@ -50,23 +50,24 @@ with open("day9.txt") as in_handle:
     for line in in_handle:
         height_map.append([int(x) for x in line.strip()])
 
-    risk = 0
-    basin_number = 0
+risk = 0
+basin_number = 0
 
-    for row in range(len(height_map)):
-        for col in range(len(height_map[row])):
-            if all(n > height_map[row][col] for n in neighbors(col, row, height_map)):
-                risk += height_map[row][col] + 1
+for row in range(len(height_map)):
+    for col in range(len(height_map[row])):
+        if all(n > height_map[row][col] for n in neighbors(col, row, height_map)):
+            risk += height_map[row][col] + 1
 
-                basin_seeds.append((basin_number, (col, row)))
-                basin_number += 1
+            basin_seeds.append((basin_number, (col, row)))
+            basin_number += 1
 
-    print(risk)
+print(risk)
 
-    multiplied_area_total = None
-    for basin_area in find_basins(height_map, basin_seeds)[:3]:
-        if multiplied_area_total is None:
-            multiplied_area_total = basin_area
-        else:
-            multiplied_area_total *= basin_area
-    print(multiplied_area_total)
+multiplied_area_total = None
+for basin_area in find_basins(height_map, basin_seeds)[:3]:
+    if multiplied_area_total is None:
+        multiplied_area_total = basin_area
+    else:
+        multiplied_area_total *= basin_area
+
+print(multiplied_area_total)
